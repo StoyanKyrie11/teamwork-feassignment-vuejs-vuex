@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps, defineEmits } from "vue";
+/* Transfer to store */
 const modalTableHeaders = [
   { text: "Planet name", value: "planet name" },
   { text: "Diameter", value: "diameter" },
@@ -27,6 +28,7 @@ defineProps({
 });
 defineEmits(["close"]);
 </script>
+
 <template>
   <Transition name="modal">
     <div v-if="show" class="modal-mask">
