@@ -21,8 +21,10 @@
 
 .main {
   background-image: url("../src/assets/star-wars-backgrounds-25_bc15ec98.jpeg");
-  height: 100%;
-  width: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 100vh;
 }
 
 .container {

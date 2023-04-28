@@ -1,3 +1,12 @@
+<!--     <v-combobox
+      label="Select a character"
+      color="success"
+      bg-color="white"
+      v-model="data.selectedName"
+      :items="data.characterNames"
+      clearable
+    ></v-combobox> -->
+
 <template>
   <div>
     <h1>{{ characterName }}</h1>

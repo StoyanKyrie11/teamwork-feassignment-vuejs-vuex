@@ -1,12 +1,13 @@
 <template>
   <v-autocomplete
-    @change="callbackMethod()"
-    v-model="selected"
-    :items="people"
-    item-text="name"
+    @change="getPeopleData()"
+    v-model="data.selectedName"
+    :items="data.characterNames"
+    color="info"
+    bg-color="white"
+    item-text=".name"
+    hide-no-data
     clearable
-    filled
-    dark
     label="Search or select character"
   ></v-autocomplete>
   <table>
@@ -33,15 +34,23 @@
   </table>
 </template>
 <script setup>
-import { reactive, computed } from "vue";
+import { reactive, computed, watch, onMounted } from "vue";
+import {
+  CHARACTER_PEOPLE_URL,
+  CHARACTER_PAGES_URL,
+} from "../constants/constants.js";
 import axios from "axios";
-const state = reactive({
+const data = reactive({
+  selectedName: "",
+  characterNames: [],
+  characterData: [],
+  characterFilterData: [],
   peopleData: [],
   searchQuery: "",
   sortDirection: "asc",
   sortColumn: "name",
 });
-axios.get("https://swapi.dev/api/people/").then((response) => {
+/* axios.get("https://swapi.dev/api/people/").then((response) => {
   state.peopleData = response.data.results.map((person) => ({
     name: person.name,
     height: person.height,
@@ -50,40 +59,115 @@ axios.get("https://swapi.dev/api/people/").then((response) => {
     edited: person.edited,
     homeworld: person.homeworld,
   }));
-});
-const callbackMethod = async () => {
-  axios.get("https://swapi.dev/api/people/").then((response) => {
-    state.peopleData = response.data.results.map((person) => ({
+}); */
+const getPeopleData = async () => {
+  try {
+    const response = await axios.get(
+      `https://swapi.dev/api/people/?search=${data.selectedName}`
+    );
+    const charDataResults = response.data.results.map((person) => {
+      return {
+        name: person.name,
+        height: person.height,
+        mass: person.mass,
+        created: person.created,
+        edited: person.edited,
+        homeworld: person.homeworld,
+      };
+    });
+    data.peopleData = charDataResults;
+    if (charDataResults.length > 0) {
+      data.selectedCharacter = charDataResults[0];
+      data.characterPlanetName = await getPlanetName(
+        data.selectedCharacter.homeworld
+      );
+    } else {
+      data.selectedCharacter = null;
+      data.characterPlanetName = "";
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getUsers = async () => {
+  /* 1. Transfer methods in Vuex store */
+  /* Import the default Star Wars Icon as v-icon */
+  /* Work on the Router + v-modal for the planets data */
+  /* Style the application */
+  let initRequest = await axios.get(CHARACTER_PEOPLE_URL);
+  initRequest.data.results.forEach((person) =>
+    data.characterFilterData.push({
       name: person.name,
       height: person.height,
-      mass: person.mass,
+      weight: person.weight,
       created: person.created,
       edited: person.edited,
       homeworld: person.homeworld,
-    }));
-  });
-};
-const filteredPeople = computed(() => {
-  let filteredData = state.peopleData.filter((person) =>
-    person.name.toLowerCase().includes(state.searchQuery.toLowerCase())
+    })
   );
-  if (state.sortDirection === "asc") {
+  let count = initRequest.data.count;
+  let pages = Math.ceil(count / 10);
+  data.isLoading = true;
+  try {
+    for (let i = 2; i <= pages; i++) {
+      const response = await axios.get(CHARACTER_PAGES_URL + i);
+      response.data.results.forEach((result) => {
+        data.characterData.push({
+          name: result.name,
+          height: result.height,
+          weight: result.weight,
+          created: result.created,
+          edited: result.edited,
+        });
+        data.characterNames.push(result.name);
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    data.isLoading = false;
+  }
+};
+
+const filteredPeople = computed(() => {
+  let filteredData = data.peopleData.filter((person) =>
+    person.name.toLowerCase().includes(data.searchQuery.toLowerCase())
+  );
+  if (data.sortDirection === "asc") {
     filteredData.sort((a, b) =>
-      a[state.sortColumn] > b[state.sortColumn] ? 1 : -1
+      a[data.sortColumn] > b[data.sortColumn] ? 1 : -1
     );
   } else {
     filteredData.sort((a, b) =>
-      a[state.sortColumn] < b[state.sortColumn] ? 1 : -1
+      a[data.sortColumn] < b[data.sortColumn] ? 1 : -1
     );
   }
   return filteredData;
 });
+
 function sortBy(column) {
-  if (state.sortColumn === column) {
-    state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc";
+  if (data.sortColumn === column) {
+    data.sortDirection = data.sortDirection === "asc" ? "desc" : "asc";
   } else {
-    state.sortDirection = "asc";
-    state.sortColumn = column;
+    data.sortDirection = "asc";
+    data.sortColumn = column;
   }
 }
+
+watch(
+  () => data.selectedName,
+  () => {
+    getPeopleData();
+  }
+);
+onMounted(async () => {
+  try {
+    getUsers();
+    const usersData = await axios.get("https://swapi.dev/api/people/");
+    data.names = usersData.data.results.map((person) => person.name);
+  } catch (error) {
+    console.log(error);
+  }
+});
 </script>

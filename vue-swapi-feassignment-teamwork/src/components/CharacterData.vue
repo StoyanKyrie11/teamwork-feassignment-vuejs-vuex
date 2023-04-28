@@ -1,19 +1,28 @@
 <template>
   <v-container style="height: 500px" fluid>
-    <img
-      src="../assets/StarWarsLogo.jpeg"
-      cover
-      width="150"
-      alt="star-wars-icon"
-    />
-    <v-combobox
-      label="Select a character"
-      color="success"
-      bg-color="white"
+    <v-row
+      cols="12"
+      class="center header-text"
+      style="display: flex; justify-content: center"
+    >
+      <img
+        src="../assets/StarWarsLogo.jpeg"
+        cover
+        width="150"
+        alt="star-wars-icon"
+      />
+    </v-row>
+
+    <v-autocomplete
+      @change="getPeopleData()"
       v-model="data.selectedName"
       :items="data.characterNames"
+      color="info"
+      bg-color="white"
+      hide-no-data
       clearable
-    ></v-combobox>
+      label="Search a character you must"
+    />
     <!-- <v-progress-circular
       color="grey-lighten-4"
       indeterminate
@@ -21,19 +30,19 @@
     <v-table>
       <thead>
         <tr>
-          <th class="text-center" @click="sortBy('name')">
+          <th class="text-center" @click="sortingFunction('name')">
             {{ data.headers[0].text }}
           </th>
-          <th class="text-center" @click="sortBy('height')">
+          <th class="text-center" @click="sortingFunction('height')">
             {{ data.headers[1].text }}
           </th>
-          <th class="text-center" @click="sortBy('mass')">
+          <th class="text-center" @click="sortingFunction('mass')">
             {{ data.headers[2].text }}
           </th>
-          <th class="text-center" @click="sortBy('created')">
+          <th class="text-center" @click="sortingFunction('created')">
             {{ data.headers[3].text }}
           </th>
-          <th class="text-center" @click="sortBy('edited')">
+          <th class="text-center" @click="sortingFunction('edited')">
             {{ data.headers[4].text }}
           </th>
           <th class="text-center" @click="sortBy('homeworld')">
@@ -67,20 +76,22 @@
               >
                 {{ data.characterPlanetName }}
               </button>
-              <teleport to="body">
+              <Teleport to="body">
                 <div class="modal" v-if="data.isModalOpen">
-                  <!-- Proceed from here: Pass the filtering and sorting methods
-                  from parent to child component.
-                 -->
                   <planets-data-modal-content
                     @close="data.isModalOpen = false"
+                    :show="data.isModalOpen"
                     :planetName="data.homeworldData.planetName"
                     :diameter="data.homeworldData.diameter"
                     :climate="data.homeworldData.climate"
                     :population="data.homeworldData.population"
-                  />
+                  >
+                    <template #header>
+                      <h3>custom header</h3>
+                    </template>
+                  </planets-data-modal-content>
                 </div>
-              </teleport>
+              </Teleport>
             </div>
           </td>
         </tr>
