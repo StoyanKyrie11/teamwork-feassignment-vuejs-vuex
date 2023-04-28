@@ -7,11 +7,12 @@
       alt="star-wars-icon"
     />
     <v-combobox
+      label="Select a character"
       color="success"
       bg-color="white"
       v-model="data.selectedName"
       :items="data.characterNames"
-      label="Choose a character"
+      clearable
     ></v-combobox>
     <!-- <v-progress-circular
       color="grey-lighten-4"
@@ -20,12 +21,23 @@
     <v-table>
       <thead>
         <tr>
-          <th
-            v-for="(header, index) in data.headers"
-            :key="index"
-            class="text-center"
-          >
-            {{ header.text }}
+          <th class="text-center" @click="sortBy('name')">
+            {{ data.headers[0].text }}
+          </th>
+          <th class="text-center" @click="sortBy('height')">
+            {{ data.headers[1].text }}
+          </th>
+          <th class="text-center" @click="sortBy('mass')">
+            {{ data.headers[2].text }}
+          </th>
+          <th class="text-center" @click="sortBy('created')">
+            {{ data.headers[3].text }}
+          </th>
+          <th class="text-center" @click="sortBy('edited')">
+            {{ data.headers[4].text }}
+          </th>
+          <th class="text-center" @click="sortBy('homeworld')">
+            {{ data.headers[5].text }}
           </th>
         </tr>
       </thead>
@@ -34,7 +46,9 @@
         <tr v-for="char in data.peopleData" :key="char.name">
           <td class="text-center">{{ char.name }}</td>
           <td class="text-center">{{ char.height + " cm" }}</td>
-          <td class="text-center">{{ char.mass + " kg" }}</td>
+          <td class="text-center">
+            {{ char.mass + " kg" }}
+          </td>
           <td class="text-center">
             {{ char.created.substring(0, 10).replaceAll("-", "/") }}
           </td>
@@ -55,6 +69,9 @@
               </button>
               <teleport to="body">
                 <div class="modal" v-if="data.isModalOpen">
+                  <!-- Proceed from here: Pass the filtering and sorting methods
+                  from parent to child component.
+                 -->
                   <planets-data-modal-content
                     @close="data.isModalOpen = false"
                     :planetName="data.homeworldData.planetName"
@@ -71,16 +88,14 @@
     </v-table>
   </v-container>
 </template>
-
 <script setup>
 import axios from "axios";
-import { reactive, watch, onMounted } from "vue";
+import { reactive, watch, onMounted, computed } from "vue";
 import {
   CHARACTER_PEOPLE_URL,
   CHARACTER_PAGES_URL,
 } from "../constants/constants.js";
-import PlanetsDataModalContent from "./PlanetsDataModalContent.vue.js";
-
+import PlanetsDataModalContent from "./PlanetsDataModalContent.vue";
 const data = reactive({
   selectedName: "",
   selectedCharacter: null,
@@ -105,14 +120,27 @@ const data = reactive({
     { text: "Edited", value: "edited" },
     { text: "Homeworld", value: "homeworld" },
   ],
+  characterFilterData: [],
+  sortBy: "asc",
+  sortColumn: "name",
+  searchQueryParam: "",
 });
-
 const getUsers = async () => {
   /* 1. Transfer methods in Vuex store */
   /* Import the default Star Wars Icon as v-icon */
   /* Work on the Router + v-modal for the planets data */
   /* Style the application */
   let initRequest = await axios.get(CHARACTER_PEOPLE_URL);
+  initRequest.data.results.forEach((person) =>
+    data.characterFilterData.push({
+      name: person.name,
+      height: person.height,
+      weight: person.weight,
+      created: person.created,
+      edited: person.edited,
+      homeworld: person.homeworld,
+    })
+  );
   let count = initRequest.data.count;
   let pages = Math.ceil(count / 10);
   data.isLoading = true;
@@ -136,7 +164,6 @@ const getUsers = async () => {
     data.isLoading = false;
   }
 };
-
 const getPeopleData = async () => {
   try {
     const response = await axios.get(
@@ -153,7 +180,6 @@ const getPeopleData = async () => {
       };
     });
     data.peopleData = charDataResults;
-
     if (charDataResults.length > 0) {
       data.selectedCharacter = charDataResults[0];
       data.characterPlanetName = await getPlanetName(
@@ -167,7 +193,6 @@ const getPeopleData = async () => {
     console.log(error);
   }
 };
-
 const getPlanetName = async (homeworld) => {
   try {
     const response = await axios.get(homeworld);
@@ -177,7 +202,6 @@ const getPlanetName = async (homeworld) => {
     return "";
   }
 };
-
 const getPlanetData = async () => {
   try {
     const response = await axios.get(data.peopleData[0].homeworld);
@@ -187,19 +211,41 @@ const getPlanetData = async () => {
       climate: response.data.climate,
       population: response.data.population,
     };
-    console.log(data.homeworldData);
   } catch (error) {
     console.log(error);
   }
 };
-
+const filterCharacters = computed(() => {
+  let filterCharacterData = data.peopleData.filter((character) => {
+    character.name.toLowerCase().includes(data.searchQueryParam.toLowerCase());
+  });
+  if (data.sortBy === "asc") {
+    /* ASC sorting */
+    filterCharacterData.sort((j, k) =>
+      j[data.sortColumn] > k[data.sortColumn] ? 1 : -1
+    );
+  } else {
+    /* DESC sorting */
+    filterCharacterData.sort((j, k) =>
+      j[data.sortColumn] < k[data.sortColumn] ? 1 : -1
+    );
+  }
+  return filterCharacterData;
+});
+const sortingFunction = (colName) => {
+  if (data.sortColumn === colName) {
+    data.sortBy = data.sortBy === "asc" ? "desc" : "asc";
+  } else {
+    data.sortBy = "asc";
+    data.sortColumn = colName;
+  }
+};
 watch(
   () => data.selectedName,
   () => {
     getPeopleData();
   }
 );
-
 onMounted(async () => {
   try {
     getUsers();
@@ -210,12 +256,10 @@ onMounted(async () => {
   }
 });
 </script>
-
 <style lang="scss" scoped>
 .modal {
   display: flex;
 }
-
 .modal-btn {
   align-self: flex-start;
 }

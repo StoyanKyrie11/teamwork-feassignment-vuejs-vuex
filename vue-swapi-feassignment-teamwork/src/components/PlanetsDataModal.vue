@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from "vue";
 import PlanetsDataModalContent from "./PlanetsDataModalContent.vue";
-
 const isOpen = ref(false);
 </script>
 <template>
@@ -18,7 +17,6 @@ const isOpen = ref(false);
     </teleport>
   </div>
 </template>
-
 <style lang="scss" scoped>
 .root {
   position: relative;
@@ -33,7 +31,6 @@ const isOpen = ref(false);
   display: flex;
   justify-content: center;
   align-items: center;
-
   .modal-content {
     background-color: white;
     padding: 20px;

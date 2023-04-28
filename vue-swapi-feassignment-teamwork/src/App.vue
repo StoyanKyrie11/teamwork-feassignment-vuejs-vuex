@@ -1,11 +1,7 @@
 <script setup>
-import CharacterData from "./components/DumpLogic.vue";
-import CharacterDataTest from "./components/CharacterData.vue";
-import CharacterPlanetName from "./components/CharacterPlanetName.vue";
-import PlanetsDataModal from "./components/PlanetsDataModal.vue";
-import TestComponent from "./components/TestComponent.vue";
+import CharacterData from "./components/CharacterData.vue";
+import FilteringColumns from "./components/FilteringColumns.vue";
 </script>
-
 <template>
   <div class="main">
     <!-- <TestComponent /> -->
@@ -14,9 +10,9 @@ import TestComponent from "./components/TestComponent.vue";
     <!-- <CharacterData /> -->
     <CharacterData />
     <!-- <CharacterPlanetName /> -->
+    <!-- <FilteringColumns /> -->
   </div>
 </template>
-
 <style>
 @font-face {
   font-family: "Distant Galaxy";

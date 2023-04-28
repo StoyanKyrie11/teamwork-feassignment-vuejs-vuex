@@ -11,16 +11,13 @@
     </v-card>
   </v-container>
 </template>
-
 <script setup>
 import axios from "axios";
 import { ref, watch, onMounted } from "vue";
-
 const selectedName = ref("");
 const names = ref([]);
 const selectedPerson = ref(null);
 const planetName = ref("");
-
 const getPersonData = async () => {
   try {
     const response = await axios.get(
@@ -32,7 +29,6 @@ const getPersonData = async () => {
         planetUrl: person.homeworld,
       };
     });
-
     if (peopleData.length > 0) {
       selectedPerson.value = peopleData[0];
       planetName.value = await getPlanetName(selectedPerson.value.planetUrl);
@@ -44,7 +40,6 @@ const getPersonData = async () => {
     console.log(error);
   }
 };
-
 const getPlanetName = async (planetUrl) => {
   try {
     const response = await axios.get(planetUrl);
@@ -54,7 +49,6 @@ const getPlanetName = async (planetUrl) => {
     return "";
   }
 };
-
 const getNames = async () => {
   try {
     const response = await axios.get("https://swapi.dev/api/people/");
@@ -63,11 +57,9 @@ const getNames = async () => {
     console.log(error);
   }
 };
-
 watch(selectedName, () => {
   getPersonData();
 });
-
 onMounted(() => {
   getNames();
 });
