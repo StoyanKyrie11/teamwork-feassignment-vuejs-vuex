@@ -116,8 +116,8 @@ const data = reactive({
   names: [],
   peopleData: [],
   homeworldData: {
-    planetName: "hey",
-    diameter: "aoooo",
+    planetName: "",
+    diameter: "",
     climate: "",
     population: "",
   },
