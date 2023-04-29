@@ -1,7 +1,13 @@
-.homeworld-button {
-  display: flex;
-  justify-content: center;
-  background-color: rgb(0, 137, 187);
-  border: 2px solid #ffe81f;
-  border-radius: 1rem;
+.modal-btn {
+  text-decoration: underline;
+  :hover {
+    color: $primary-color;
+  }
+}
+
+.planet-modal-btn {
+  text-decoration: underline;
+  :hover {
+    color: $secondary-color;
+  }
 }

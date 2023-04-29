@@ -12,7 +12,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: $modal-mask-bg-color;
   display: flex;
   transition: opacity 0.9s ease;
 }
@@ -21,9 +21,9 @@
   width: 80vw;
   margin: auto;
   padding: 3vh 2vw;
-  background-color: #fff;
+  background-color: $modal-container-bg-color;
   border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  box-shadow: 0 2px 8px $modal-container-box-shadow;
   transition: all 1.3s ease-in-out;
 }
 

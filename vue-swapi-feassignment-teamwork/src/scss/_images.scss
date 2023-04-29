@@ -1,0 +1,22 @@
+.star-wars-svg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15px 0;
+  transition: transform 0.5s ease-in-out;
+  animation: pulse 2s infinite;
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 $svg-kfr-primary-color;
+  }
+  70% {
+    box-shadow: 0 0 0 10px $svg-kfr-secondary-color;
+  }
+  100% {
+    box-shadow: 0 0 0 0 $svg-kfr-secondary-color;
+  }
+}

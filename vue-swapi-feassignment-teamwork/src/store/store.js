@@ -45,7 +45,7 @@ const data = reactive({
   charPerPage: 10,
 });
 
-const getUsers = async () => {
+const getPeople = async () => {
   try {
     let initRequest = await axios.get(CHARACTER_PEOPLE_URL);
     initRequest.data.results.forEach((person) =>
@@ -177,7 +177,7 @@ export default {
   getAllPages,
   nextPage,
   prevPage,
-  getUsers,
+  getPeople,
   getCharacterData,
   getPlanetName,
   getPlanetData,

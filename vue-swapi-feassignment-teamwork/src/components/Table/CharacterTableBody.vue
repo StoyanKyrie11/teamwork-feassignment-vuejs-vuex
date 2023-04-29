@@ -11,6 +11,8 @@ const store = inject("store");
     v-for="char in store.data.peopleData"
     :key="char.name"
   >
+    <!-- Refactor - iterate to pass the utility functions as props to the v-for -->
+    <!-- Extract the data into separate components -->
     <td class="text-center">{{ char.name }}</td>
     <td class="text-center">{{ char.height + " cm" }}</td>
     <td class="text-center">
@@ -25,8 +27,7 @@ const store = inject("store");
     <td class="text-center">
       <div class="root">
         <button
-          style="text-decoration: underline"
-          class="modal-btn"
+          class="planet-modal-btn"
           @click.prevent="
             store.getPlanetData();
             store.data.isModalOpen = true;

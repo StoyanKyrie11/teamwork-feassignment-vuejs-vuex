@@ -1,6 +1,6 @@
 <template>
   <v-autocomplete
-    @change="store.getUsers()"
+    @change="store.getPeople()"
     v-model="data.selectedName"
     :items="data.characterNames"
     color="info"
@@ -87,7 +87,7 @@ const data = reactive({
   }));
 }); */
 
-const getUsers = async () => {
+const getPeople = async () => {
   /* 1. Transfer methods in Vuex store */
   /* Import the default Star Wars Icon as v-icon */
   /* Work on the Router + v-modal for the planets data */
@@ -160,7 +160,7 @@ watch(
 );
 onMounted(async () => {
   try {
-    getUsers();
+    getPeople();
     const usersData = await axios.get("https://swapi.dev/api/people/");
     data.names = usersData.data.results.map((person) => person.name);
   } catch (error) {

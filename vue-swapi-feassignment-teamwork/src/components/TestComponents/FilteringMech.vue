@@ -52,7 +52,7 @@ const options = ref({ itemsPerPage: 10 });
  */
 onMounted(async () => {
   try {
-    store.getUsers();
+    store.getPeople();
     const usersData = await axios.get(CHARACTER_PEOPLE_URL);
     store.data.names = usersData.data.results.map((person) => person.name);
   } catch (error) {

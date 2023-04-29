@@ -15,7 +15,8 @@ watch(
 );
 onMounted(async () => {
   try {
-    store.getUsers();
+    store.getPeople();
+    /* Remove this piece of shit */
     const usersData = await axios.get(CHARACTER_PEOPLE_URL);
     store.data.names = usersData.data.results.map((person) => person.name);
   } catch (error) {
@@ -26,23 +27,13 @@ onMounted(async () => {
 
 <template>
   <v-container style="height: 500px" fluid>
-    <v-row
-      cols="12"
-      class="center header-text"
-      style="display: flex; justify-content: center"
-    >
+    <v-row cols="12">
       <v-img
         class="star-wars-svg"
         src="https://cdn.worldvectorlogo.com/logos/star-wars-4.svg"
         width="150"
         height="150"
         alt="star-wars-icon"
-        style="
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin: 15px 0;
-        "
       />
     </v-row>
 
@@ -59,11 +50,11 @@ onMounted(async () => {
     />
 
     <v-progress-circular
+      class="loader"
       v-if="store.data.isLoading"
       size="40"
       bg-color="white"
       indeterminate
-      style="position: absolute; top: 50%; left: 50%"
     ></v-progress-circular>
     <CharacterTable class="star-wars-table" v-else="store.data.isLoading" />
 

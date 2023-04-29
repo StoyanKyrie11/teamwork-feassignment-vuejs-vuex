@@ -43,6 +43,7 @@ defineEmits(["close"]);
           </thead>
           <tbody class="modal-body">
             <tr>
+              <!-- Refactor this with v-for and the approach mentioned by Ivo -->
               <td class="text-center">{{ planetName }}</td>
               <td class="text-center">{{ diameter + " km" }}<sup>2</sup></td>
               <td class="text-center">{{ climate }}</td>
