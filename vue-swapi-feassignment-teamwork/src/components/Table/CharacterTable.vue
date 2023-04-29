@@ -14,5 +14,3 @@ import CharacterTableBody from "./CharacterTableBody.vue";
     </tbody>
   </v-table>
 </template>
-
-<style lang="scss" scoped></style>

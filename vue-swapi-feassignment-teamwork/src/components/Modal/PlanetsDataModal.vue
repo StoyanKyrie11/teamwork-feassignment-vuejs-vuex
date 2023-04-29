@@ -19,12 +19,3 @@ const store = inject("store");
     </div>
   </Teleport>
 </template>
-
-<style lang="scss" scoped>
-.modal {
-  display: flex;
-}
-.modal-btn {
-  align-self: flex-start;
-}
-</style>

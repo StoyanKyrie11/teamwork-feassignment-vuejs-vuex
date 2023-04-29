@@ -1,0 +1,43 @@
+.star-wars-autocomplete {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    top: 75%;
+    left: -50%;
+    width: 200%;
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      #ffe81f 25%,
+      #ffe81f 75%,
+      transparent 100%
+    );
+    animation: move 3s infinite;
+  }
+  &:focus-within {
+    &:before {
+      animation-play-state: paused;
+    }
+  }
+  @keyframes move {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes glow {
+    0% {
+      text-shadow: 0 0 10px #ffe81f;
+    }
+    50% {
+      text-shadow: 0 0 15px #ffe81f;
+    }
+    100% {
+      text-shadow: 0 0 10px #ffe81f;
+    }
+  }
+}

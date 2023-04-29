@@ -26,7 +26,3 @@ const store = inject("store");
     </th>
   </tr>
 </template>
-
-<style lang="scss" scoped>
-
-</style>
