@@ -5,7 +5,7 @@ const store = inject("store");
 </script>
 
 <template>
-  <tr>
+  <tr class="star-wars-table-header">
     <th class="text-center" @click="store.columnSorting('name')">
       {{ store.data.headers[0].text }}
     </th>
@@ -27,4 +27,6 @@ const store = inject("store");
   </tr>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+
+</style>

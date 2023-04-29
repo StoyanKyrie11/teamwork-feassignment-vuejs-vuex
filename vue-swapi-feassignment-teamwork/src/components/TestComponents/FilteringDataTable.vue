@@ -1,6 +1,6 @@
 <template>
   <v-autocomplete
-    @change="getPeopleData()"
+    @change="store.getUsers()"
     v-model="data.selectedName"
     :items="data.characterNames"
     color="info"
@@ -22,7 +22,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="person in filteredPeople" :key="person.name">
+      <tr v-for="person in data.characterFilterData" :key="person.name">
         <td>{{ person.name }}</td>
         <td>{{ person.height }}</td>
         <td>{{ person.mass }}</td>
@@ -38,17 +38,43 @@ import { reactive, computed, watch, onMounted } from "vue";
 import {
   CHARACTER_PEOPLE_URL,
   CHARACTER_PAGES_URL,
-} from "../constants/constants.js";
+} from "../../constants/constants.js";
 import axios from "axios";
+import store from "../../store/store";
 const data = reactive({
   selectedName: "",
-  characterNames: [],
+  selectedCharacter: null,
+  characterPlanetName: "",
   characterData: [],
-  characterFilterData: [],
+  characterNames: [],
+  names: [],
   peopleData: [],
-  searchQuery: "",
-  sortDirection: "asc",
+  homeworldData: {
+    planetName: "",
+    diameter: "",
+    climate: "",
+    population: "",
+  },
+  isLoading: false,
+  isModalOpen: false,
+  headers: [
+    { text: "Name", value: "name" },
+    { text: "Height", value: "height" },
+    { text: "Mass", value: "mass" },
+    { text: "Created", value: "created" },
+    { text: "Edited", value: "edited" },
+    { text: "Homeworld", value: "homeworld" },
+  ],
+  modalTableHeaders: [
+    { text: "Planet name", value: "planet name" },
+    { text: "Diameter", value: "diameter" },
+    { text: "Climate", value: "climate" },
+    { text: "Population", value: "population" },
+  ],
+  characterFilterData: [],
+  sortBy: "asc",
   sortColumn: "name",
+  searchQueryParam: "",
 });
 /* axios.get("https://swapi.dev/api/people/").then((response) => {
   state.peopleData = response.data.results.map((person) => ({
@@ -60,35 +86,6 @@ const data = reactive({
     homeworld: person.homeworld,
   }));
 }); */
-const getPeopleData = async () => {
-  try {
-    const response = await axios.get(
-      `https://swapi.dev/api/people/?search=${data.selectedName}`
-    );
-    const charDataResults = response.data.results.map((person) => {
-      return {
-        name: person.name,
-        height: person.height,
-        mass: person.mass,
-        created: person.created,
-        edited: person.edited,
-        homeworld: person.homeworld,
-      };
-    });
-    data.peopleData = charDataResults;
-    if (charDataResults.length > 0) {
-      data.selectedCharacter = charDataResults[0];
-      data.characterPlanetName = await getPlanetName(
-        data.selectedCharacter.homeworld
-      );
-    } else {
-      data.selectedCharacter = null;
-      data.characterPlanetName = "";
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 const getUsers = async () => {
   /* 1. Transfer methods in Vuex store */
@@ -100,7 +97,7 @@ const getUsers = async () => {
     data.characterFilterData.push({
       name: person.name,
       height: person.height,
-      weight: person.weight,
+      mass: person.mass,
       created: person.created,
       edited: person.edited,
       homeworld: person.homeworld,
@@ -158,7 +155,7 @@ function sortBy(column) {
 watch(
   () => data.selectedName,
   () => {
-    getPeopleData();
+    store.getCharacterData();
   }
 );
 onMounted(async () => {

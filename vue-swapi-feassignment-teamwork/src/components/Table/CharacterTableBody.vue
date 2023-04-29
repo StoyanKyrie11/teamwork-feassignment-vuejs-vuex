@@ -1,12 +1,16 @@
 <script setup>
 import { inject } from "vue";
-import PlanetsDataModalContent from "../Modal/PlanetsDataModalContent.vue";
+import PlanetsDataModal from "../Modal/PlanetsDataModal.vue";
 
 const store = inject("store");
 </script>
 
 <template>
-  <tr v-for="char in store.data.peopleData" :key="char.name">
+  <tr
+    class="star-wars-table-body"
+    v-for="char in store.data.peopleData"
+    :key="char.name"
+  >
     <td class="text-center">{{ char.name }}</td>
     <td class="text-center">{{ char.height + " cm" }}</td>
     <td class="text-center">
@@ -30,21 +34,8 @@ const store = inject("store");
         >
           {{ store.data.characterPlanetName }}
         </button>
-        <Teleport to="body">
-          <div class="modal" v-if="store.data.isModalOpen">
-            <planets-data-modal-content
-              @close="store.data.isModalOpen = false"
-              :show="store.data.isModalOpen"
-              :planetName="store.data.homeworldData.planetName"
-              :diameter="store.data.homeworldData.diameter"
-              :climate="store.data.homeworldData.climate"
-              :population="store.data.homeworldData.population"
-            />
-          </div>
-        </Teleport>
+        <PlanetsDataModal />
       </div>
     </td>
   </tr>
 </template>
-
-<style lang="scss" scoped></style>

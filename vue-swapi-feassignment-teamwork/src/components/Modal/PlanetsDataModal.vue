@@ -1,19 +1,30 @@
 <script setup>
-import Modal from "./Modal.vue";
-import { ref } from "vue";
+import { inject } from "vue";
+import PlanetsDataModalContent from "./PlanetsDataModalContent.vue";
 
-const showModal = ref(false);
+const store = inject("store");
 </script>
 
 <template>
-  <button id="show-modal" @click="showModal = true">Show Modal</button>
-
   <Teleport to="body">
-    <!-- use the modal component, pass in the prop -->
-    <modal :show="showModal" @close="showModal = false">
-      <template #header>
-        <h3>custom header</h3>
-      </template>
-    </modal>
+    <div class="modal" v-if="store.data.isModalOpen">
+      <planets-data-modal-content
+        @close="store.data.isModalOpen = false"
+        :show="store.data.isModalOpen"
+        :planetName="store.data.homeworldData.planetName"
+        :diameter="store.data.homeworldData.diameter"
+        :climate="store.data.homeworldData.climate"
+        :population="store.data.homeworldData.population"
+      />
+    </div>
   </Teleport>
 </template>
+
+<style lang="scss" scoped>
+.modal {
+  display: flex;
+}
+.modal-btn {
+  align-self: flex-start;
+}
+</style>

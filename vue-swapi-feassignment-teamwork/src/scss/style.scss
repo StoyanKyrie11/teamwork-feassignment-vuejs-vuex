@@ -4,8 +4,8 @@
 );
 
 @import "config";
-@import "mobile";
-@import "utilities";
+@import "buttons";
+@import "table";
 
 *,
 *::before,
@@ -48,12 +48,4 @@ h3.user-title {
   margin-bottom: 20px;
   text-shadow: 2px 2px $primary-color;
   text-transform: uppercase;
-}
-
-.homeworld-button {
-  display: flex;
-  justify-content: center;
-  background-color: rgb(0, 137, 187);
-  border: 2px solid #ffe81f;
-  border-radius: 1rem;
 }

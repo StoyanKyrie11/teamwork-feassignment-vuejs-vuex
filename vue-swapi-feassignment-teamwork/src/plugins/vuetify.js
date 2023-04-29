@@ -4,9 +4,19 @@ import "vuetify/styles/main.sass";
 import "vuetify/styles";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
-
+import * as labs from "vuetify/labs/components";
 export default createVuetify({
-  components,
+  components: {
+    ...labs,
+    /* explicit stating of imports */
+    VImg: components.VImg,
+    VTable: components.VTable,
+    VApp: components.VApp,
+    VRow: components.VRow,
+    VProgressCircular: components.VProgressCircular,
+    VContainer: components.VContainer,
+    VAutocomplete: components.VAutocomplete,
+  },
   directives,
   theme: {
     themes: {

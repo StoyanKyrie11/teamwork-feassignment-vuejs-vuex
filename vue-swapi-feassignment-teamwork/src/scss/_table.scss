@@ -1,0 +1,23 @@
+.star-wars-table-header {
+    th {
+        color: #fff;
+        border: 2px solid #fff;
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+
+        &:hover {
+        background-color: #dd720d;
+        color: rgba(249, 249, 178, 0.755);
+        }
+    }
+}
+
+.star-wars-table-body {
+    transition: all 0.2s ease-in-out;
+    &:hover {
+        transform: scale(1.075);
+        background-color: rgba(249, 249, 178, 0.755);
+        color: #000;
+    }
+}

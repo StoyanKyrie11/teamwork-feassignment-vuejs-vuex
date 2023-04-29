@@ -1,5 +1,6 @@
-import { reactive } from "vue";
+import { reactive, computed } from "vue";
 import axios from "axios";
+import _ from "lodash";
 import {
   CHARACTER_PEOPLE_URL,
   CHARACTER_PAGES_URL,
@@ -30,10 +31,18 @@ const data = reactive({
     { text: "Edited", value: "edited" },
     { text: "Homeworld", value: "homeworld" },
   ],
+  modalTableHeaders: [
+    { text: "Planet name", value: "planet name" },
+    { text: "Diameter", value: "diameter" },
+    { text: "Climate", value: "climate" },
+    { text: "Population", value: "population" },
+  ],
   characterFilterData: [],
   sortBy: "asc",
   sortColumn: "name",
-  searchQueryParam: "",
+  sortingKey: "",
+  currPage: 1,
+  charPerPage: 10,
 });
 
 const getUsers = async () => {
@@ -43,7 +52,7 @@ const getUsers = async () => {
       data.characterFilterData.push({
         name: person.name,
         height: person.height,
-        weight: person.weight,
+        mass: person.mass,
         created: person.created,
         edited: person.edited,
         homeworld: person.homeworld,
@@ -58,7 +67,7 @@ const getUsers = async () => {
         data.characterData.push({
           name: result.name,
           height: result.height,
-          weight: result.weight,
+          mass: result.mass,
           created: result.created,
           edited: result.edited,
           homeworld: result.homeworld,
@@ -129,16 +138,45 @@ const getPlanetData = async () => {
 };
 
 const columnSorting = (colName) => {
-  if (data.sortColumn === colName) {
-    data.sortBy = data.sortBy === "asc" ? "desc" : "asc";
+  if (data.sortingKey === colName) {
+    data.sortDirection = data.sortDirection === "asc" ? "desc" : "asc";
   } else {
-    data.sortBy = "asc";
-    data.sortColumn = colName;
+    data.sortingKey = colName;
+    data.sortDirection = "asc";
   }
+
+  data.characterData = _.orderBy(
+    data.characterData,
+    colName,
+    data.sortDirection
+  );
+};
+
+/* Pagination */
+const handlePagination = computed(() => {
+  const startPage = (data.currPage - 1) * data.charPerPage;
+  const endPage = startPage + data.charPerPage;
+  return data.characterData.slice(startPage, endPage);
+});
+
+const getAllPages = computed(() => {
+  return Math.ceil(data.characterData.length / data.charPerPage);
+});
+
+const nextPage = () => {
+  data.currPage++;
+};
+
+const prevPage = () => {
+  data.currPage--;
 };
 
 export default {
   data: data,
+  handlePagination,
+  getAllPages,
+  nextPage,
+  prevPage,
   getUsers,
   getCharacterData,
   getPlanetName,

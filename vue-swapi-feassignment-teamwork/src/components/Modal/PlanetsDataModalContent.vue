@@ -1,12 +1,8 @@
 <script setup>
-import { defineProps, defineEmits } from "vue";
-/* Transfer to store */
-const modalTableHeaders = [
-  { text: "Planet name", value: "planet name" },
-  { text: "Diameter", value: "diameter" },
-  { text: "Climate", value: "climate" },
-  { text: "Population", value: "population" },
-];
+import { defineProps, defineEmits, inject } from "vue";
+
+const store = inject("store");
+
 defineProps({
   show: Boolean,
   planetName: {
@@ -37,7 +33,7 @@ defineEmits(["close"]);
           <thead class="modal-header">
             <tr>
               <th
-                v-for="(header, index) in modalTableHeaders"
+                v-for="(header, index) in store.data.modalTableHeaders"
                 :key="index"
                 class="text-center"
               >
@@ -46,7 +42,6 @@ defineEmits(["close"]);
             </tr>
           </thead>
           <tbody class="modal-body">
-            <!-- Write into a separate component -->
             <tr>
               <td class="text-center">{{ planetName }}</td>
               <td class="text-center">{{ diameter + " km" }}<sup>2</sup></td>
@@ -57,13 +52,7 @@ defineEmits(["close"]);
             </tr>
           </tbody>
         </v-table>
-        <button
-          class="modal-default-button"
-          style="align-self: flex-start"
-          @click="$emit('close')"
-        >
-          X
-        </button>
+        <button class="modal-default-button" @click="$emit('close')">X</button>
       </div>
     </div>
   </Transition>
@@ -89,7 +78,7 @@ defineEmits(["close"]);
   background-color: #fff;
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
-  transition: all 0.3s ease;
+  transition: all 1.3s ease-in-out;
 }
 
 .modal-header h3 {
@@ -102,7 +91,10 @@ defineEmits(["close"]);
 }
 
 .modal-default-button {
+  position: relative;
   float: right;
+  bottom: 13.5vh;
+  left: 1vw;
 }
 
 .modal-enter-from {
