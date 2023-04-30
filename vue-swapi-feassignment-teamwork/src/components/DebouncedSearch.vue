@@ -5,7 +5,7 @@
       label="Search for a character"
       @input="debouncedSearch"
     />
-    <v-simple-table>
+    <v-table>
       <template v-slot:default>
         <thead>
           <tr>
@@ -28,7 +28,7 @@
           </tr>
         </tbody>
       </template>
-    </v-simple-table>
+    </v-table>
   </div>
 </template>
 

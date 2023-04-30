@@ -102,13 +102,13 @@ const getCharacterData = async () => {
       homeworld: person.homeworld,
     }));
 
-    data.totalPeople = dataResponse.data.count;
+/*     data.totalPeople = dataResponse.data.count;
     data.totalDataPageCount = Math.ceil(
       dataResponse.data.count / dataResponse.data.results.length
     );
     data.totalPages = Math.ceil(data.totalPeople / 10);
 
-    data.peopleData = [...data.peopleData, ...dataResponse.data.results];
+    data.peopleData = [...data.peopleData, ...dataResponse.data.results]; */
 
     /* while (dataResponse.data.next) {
       allCharacters.push(...dataResponse.data.results);

@@ -26,7 +26,7 @@ watch(
 
 onMounted(async () => {
   try {
-    store.getPagesData();
+    // store.getPagesData();
     store.getCharacterData();
   } catch (error) {
     console.log("Error: ", error);
