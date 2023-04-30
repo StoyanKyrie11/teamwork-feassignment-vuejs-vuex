@@ -8,7 +8,7 @@ const store = inject("store");
 <template>
   <tr
     class="star-wars-table-body"
-    v-for="char in store.data.peopleData"
+    v-for="char in store.data.people"
     :key="char.name"
   >
     <!-- Refactor - iterate to pass the utility functions as props to the v-for -->

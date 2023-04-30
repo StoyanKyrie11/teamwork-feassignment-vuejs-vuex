@@ -1,0 +1,10 @@
+.star-wars-text-field {
+  [type="text"] {
+    padding-left: 15px;
+  }
+
+  :focus::placeholder {
+    color: transparent;
+    transition: all 0.3s ease-in-out;
+  }
+}

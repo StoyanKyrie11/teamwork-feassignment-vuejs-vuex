@@ -1,7 +1,5 @@
 <script setup>
-import axios from "axios";
 import { watch, onMounted, inject } from "vue";
-import { CHARACTER_PEOPLE_URL } from "../constants/constants.js";
 
 import CharacterTable from "../components/Table/CharacterTable.vue";
 
@@ -13,12 +11,10 @@ watch(
     store.getCharacterData();
   }
 );
-onMounted(async () => {
+
+onMounted(() => {
   try {
-    store.getPeople();
-    /* Remove this piece of shit */
-    const usersData = await axios.get(CHARACTER_PEOPLE_URL);
-    store.data.names = usersData.data.results.map((person) => person.name);
+    store.getCharacterData();
   } catch (error) {
     console.log("Error: ", error);
   }
@@ -26,7 +22,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-container style="height: 500px" fluid>
+  <!-- Extract each component into a separate one and import it -->
+  <v-container class="main-container" fluid>
     <v-row cols="12">
       <v-img
         class="star-wars-svg"
@@ -37,16 +34,18 @@ onMounted(async () => {
       />
     </v-row>
 
-    <v-autocomplete
-      class="star-wars-autocomplete"
+    <v-text-field
+      class="star-wars-text-field"
       @change="store.getCharacterData()"
       v-model="store.data.selectedName"
       :items="store.data.characterNames"
-      label="Search a character you must"
-      color="info"
-      bg-color="white"
+      :debounce="2000"
+      type="text"
+      placeholder="ex: Luke Skywalker"
       hide-no-data
       clearable
+      color="orange"
+      bg-color="white"
     />
 
     <v-progress-circular
@@ -72,5 +71,14 @@ onMounted(async () => {
       must-sort
       class="elevation-1"
     /> -->
+    <!-- Add styles for it -->
+    <!-- Remove magic numbers with store data -->
+    <v-pagination
+      class="pagination-button"
+      @update:modelValue="store.changePage"
+      v:model="store.data.changePage"
+      :length="store.data.totalDataPageCount"
+      :total-visible="store.data.totalDataPageCount"
+    ></v-pagination>
   </v-container>
 </template>

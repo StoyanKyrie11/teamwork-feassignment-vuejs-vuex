@@ -16,7 +16,6 @@
 .star-wars-table-body {
   transition: all 0.2s ease-in-out;
   &:hover {
-    transform: scale(1.075);
     background-color: $table-header-hover-color;
     color: $table-body-hover-color;
   }

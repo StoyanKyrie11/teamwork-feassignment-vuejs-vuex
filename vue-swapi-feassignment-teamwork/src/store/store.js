@@ -43,9 +43,16 @@ const data = reactive({
   sortingKey: "",
   currPage: 1,
   charPerPage: 10,
+  totalDataPageCount: 1,
+  people: [],
+  totalPeople: 0,
+  totalPages: 0,
+  totalPeopleCount: 0,
+  startLoopCount: 2,
+  changePage: 1,
 });
 
-const getPeople = async () => {
+/* const getPeople = async () => {
   try {
     let initRequest = await axios.get(CHARACTER_PEOPLE_URL);
     initRequest.data.results.forEach((person) =>
@@ -59,7 +66,8 @@ const getPeople = async () => {
       })
     );
     let pagesCount = initRequest.data.count;
-    let dataPages = Math.ceil(pagesCount / 10);
+    data.dataPages = Math.ceil(pagesCount / 10);
+
     data.isLoading = true;
     for (let i = 2; i <= dataPages; i++) {
       const response = await axios.get(CHARACTER_PAGES_URL + i);
@@ -80,34 +88,63 @@ const getPeople = async () => {
   } finally {
     data.isLoading = false;
   }
-};
+}; */
 
 const getCharacterData = async () => {
   try {
-    const response = await axios.get(
-      `${CHARACTER_PEOPLE_SEARCH_URL}${data.selectedName}`
-    );
-    const charDataResults = response.data.results.map((person) => {
-      return {
-        name: person.name,
-        height: person.height,
-        mass: person.mass,
-        created: person.created,
-        edited: person.edited,
-        homeworld: person.homeworld,
-      };
-    });
-    data.peopleData = charDataResults;
+    // const initRequest = await axios.get(CHARACTER_PEOPLE_URL);
+    // data.totalPeopleCount = initRequest.data.count;
+    // data.totalDataPageCount = Math.ceil(
+    //   initRequest.data.count / initRequest.data.results.length
+    // );
+    // console.log(data.totalDataPageCount); // 9 pages
+    // data.currPage = 1;
 
-    if (charDataResults.length > 0) {
-      data.selectedCharacter = charDataResults[0];
-      data.characterPlanetName = await getPlanetName(
-        data.selectedCharacter.homeworld
-      );
-    } else {
-      data.selectedCharacter = null;
-      data.characterPlanetName = "";
-    }
+    //TODO: Proceed with fixing the pagination requests */
+    const dataResponse = await axios.get(CHARACTER_PAGES_URL + data.changePage);
+    data.people = dataResponse.data.results.map((person) => ({
+      name: person.name,
+      height: person.height,
+      mass: person.mass,
+      created: person.created,
+      edited: person.edited,
+      homeworld: person.homeworld,
+    }));
+    data.totalPeople = dataResponse.data.count;
+    data.totalDataPageCount = Math.ceil(
+      dataResponse.data.count / dataResponse.data.results.length
+    );
+    data.totalPages = Math.ceil(data.totalPeople / 10);
+
+    data.peopleData = [...data.peopleData, ...dataResponse.data.results];
+    // data.currPage = 1;
+
+    // const response = await axios.get(
+    //   `${CHARACTER_PEOPLE_SEARCH_URL}${data.selectedName}`
+    // );
+    // const charDataResults = response.data.results.map((person) => {
+    //   return {
+    //     name: person.name,
+    //     height: person.height,
+    //     mass: person.mass,
+    //     created: person.created,
+    //     edited: person.edited,
+    //     homeworld: person.homeworld,
+    //   };
+    // });
+
+    // data.peopleData = charDataResults;
+    // console.log(charDataResults);
+    // if (charDataResults.length > 0) {
+    //   data.selectedCharacter = charDataResults[0];
+    //   /* Fix the planet logic to display planets dynamically */
+    //   data.characterPlanetName = await getPlanetName(
+    //     data.selectedCharacter.homeworld
+    //   );
+    // } else {
+    //   data.selectedCharacter = null;
+    //   data.characterPlanetName = "";
+    // }
   } catch (error) {
     console.log("Error: ", error);
   }
@@ -137,7 +174,7 @@ const getPlanetData = async () => {
   }
 };
 
-const columnSorting = (colName) => {
+/* const columnSorting = (colName) => {
   if (data.sortingKey === colName) {
     data.sortDirection = data.sortDirection === "asc" ? "desc" : "asc";
   } else {
@@ -150,36 +187,42 @@ const columnSorting = (colName) => {
     colName,
     data.sortDirection
   );
-};
+}; */
 
 /* Pagination */
 const handlePagination = computed(() => {
   const startPage = (data.currPage - 1) * data.charPerPage;
   const endPage = startPage + data.charPerPage;
-  return data.characterData.slice(startPage, endPage);
+  return data.peopleData.slice(startPage, endPage);
 });
 
 const getAllPages = computed(() => {
   return Math.ceil(data.characterData.length / data.charPerPage);
 });
 
-const nextPage = () => {
+const changePage = (page) => {
+  data.changePage = page;
+  getCharacterData();
+};
+
+/* const nextPage = () => {
   data.currPage++;
 };
 
 const prevPage = () => {
   data.currPage--;
-};
+}; */
 
 export default {
   data: data,
   handlePagination,
   getAllPages,
-  nextPage,
-  prevPage,
-  getPeople,
+  // nextPage,
+  // prevPage,
+  // getPeople,
   getCharacterData,
   getPlanetName,
   getPlanetData,
-  columnSorting,
+  changePage,
+  // columnSorting,
 };

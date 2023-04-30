@@ -9,6 +9,8 @@ export default createVuetify({
   components: {
     ...labs,
     /* explicit stating of imports */
+    VTextField: components.VTextField,
+    VPagination: components.VPagination,
     VImg: components.VImg,
     VTable: components.VTable,
     VApp: components.VApp,
