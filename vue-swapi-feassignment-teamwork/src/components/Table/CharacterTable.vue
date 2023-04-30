@@ -4,7 +4,7 @@ import CharacterTableBody from "./CharacterTableBody.vue";
 </script>
 
 <template>
-  <v-table>
+  <v-table class="star-wars-table">
     <thead>
       <CharacterTableHead />
     </thead>

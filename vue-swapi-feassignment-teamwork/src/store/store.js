@@ -1,4 +1,4 @@
-import { reactive, computed } from "vue";
+import { watchEffect, ref, reactive, computed } from "vue";
 import axios from "axios";
 import _ from "lodash";
 import {
@@ -40,68 +40,59 @@ const data = reactive({
   characterFilterData: [],
   sortBy: "asc",
   sortColumn: "name",
-  sortingKey: "",
+  searchTerm: "",
   currPage: 1,
   charPerPage: 10,
-  totalDataPageCount: 1,
+  totalDataPageCount: 0,
   people: [],
+  filteredPeople: [],
   totalPeople: 0,
   totalPages: 0,
   totalPeopleCount: 0,
   startLoopCount: 2,
   changePage: 1,
+  debounceTimeout: null,
 });
 
-/* const getPeople = async () => {
-  try {
-    let initRequest = await axios.get(CHARACTER_PEOPLE_URL);
-    initRequest.data.results.forEach((person) =>
-      data.characterFilterData.push({
-        name: person.name,
-        height: person.height,
-        mass: person.mass,
-        created: person.created,
-        edited: person.edited,
-        homeworld: person.homeworld,
-      })
-    );
-    let pagesCount = initRequest.data.count;
-    data.dataPages = Math.ceil(pagesCount / 10);
+const inputValue = ref("");
+const character = ref(null);
 
-    data.isLoading = true;
-    for (let i = 2; i <= dataPages; i++) {
-      const response = await axios.get(CHARACTER_PAGES_URL + i);
-      response.data.results.forEach((result) => {
-        data.characterData.push({
-          name: result.name,
-          height: result.height,
-          mass: result.mass,
-          created: result.created,
-          edited: result.edited,
-          homeworld: result.homeworld,
-        });
-        data.characterNames.push(result.name);
-      });
+// Debouncing - 2 seconds delay
+const debounce = (fn, timeout) => {
+  let timeOutId;
+  return (...args) => {
+    if (timeOutId) {
+      clearTimeout(timeOutId);
     }
+    timeOutId = setTimeout(() => {
+      fn(...args);
+    }, timeout);
+  };
+};
+
+const getPagesData = debounce(async (inputValue) => {
+  try {
+    const response = await axios.get(
+      `https://swapi.dev/api/people/?search=${inputValue}`
+    );
+    character.value = response.data.results;
   } catch (error) {
-    console.log("Error: ", error);
-  } finally {
-    data.isLoading = false;
+    console.error(error);
   }
-}; */
+}, 2000);
 
 const getCharacterData = async () => {
   try {
-    // const initRequest = await axios.get(CHARACTER_PEOPLE_URL);
-    // data.totalPeopleCount = initRequest.data.count;
-    // data.totalDataPageCount = Math.ceil(
-    //   initRequest.data.count / initRequest.data.results.length
-    // );
-    // console.log(data.totalDataPageCount); // 9 pages
-    // data.currPage = 1;
+    /* const cacheKey = "peopleData";
+    const cache = localStorage.getItem(cacheKey);
+    if (cache) {
+      data.peopleData = JSON.parse(cache);
+      characters.value = data.peopleData[page.value - 1];
+      return;
+    }
+    const allCharacters = []; */
+    let dataResponse = await axios.get(CHARACTER_PAGES_URL + data.changePage);
 
-    //TODO: Proceed with fixing the pagination requests */
-    const dataResponse = await axios.get(CHARACTER_PAGES_URL + data.changePage);
     data.people = dataResponse.data.results.map((person) => ({
       name: person.name,
       height: person.height,
@@ -110,6 +101,7 @@ const getCharacterData = async () => {
       edited: person.edited,
       homeworld: person.homeworld,
     }));
+
     data.totalPeople = dataResponse.data.count;
     data.totalDataPageCount = Math.ceil(
       dataResponse.data.count / dataResponse.data.results.length
@@ -117,38 +109,63 @@ const getCharacterData = async () => {
     data.totalPages = Math.ceil(data.totalPeople / 10);
 
     data.peopleData = [...data.peopleData, ...dataResponse.data.results];
-    // data.currPage = 1;
 
-    // const response = await axios.get(
-    //   `${CHARACTER_PEOPLE_SEARCH_URL}${data.selectedName}`
-    // );
-    // const charDataResults = response.data.results.map((person) => {
-    //   return {
-    //     name: person.name,
-    //     height: person.height,
-    //     mass: person.mass,
-    //     created: person.created,
-    //     edited: person.edited,
-    //     homeworld: person.homeworld,
-    //   };
-    // });
+    /* while (dataResponse.data.next) {
+      allCharacters.push(...dataResponse.data.results);
+      dataResponse = await axios.get(dataResponse.data.next);
+    }
 
-    // data.peopleData = charDataResults;
-    // console.log(charDataResults);
-    // if (charDataResults.length > 0) {
-    //   data.selectedCharacter = charDataResults[0];
-    //   /* Fix the planet logic to display planets dynamically */
-    //   data.characterPlanetName = await getPlanetName(
-    //     data.selectedCharacter.homeworld
-    //   );
-    // } else {
-    //   data.selectedCharacter = null;
-    //   data.characterPlanetName = "";
-    // }
+    allCharacters.push(dataResponse.data.results);
+    characters.value = allCharacters[page.value - 1];
+    localStorage.setItem(cacheKey, JSON.stringify(allCharacters));
+    pageCount.value = allCharacters.length;
+
+    localStorage.setItem("peopleData", JSON.stringify(data.peopleData)); */
   } catch (error) {
     console.log("Error: ", error);
   }
 };
+
+// Debounced request
+const debouncedSearch = () => {
+  getPagesData(inputValue.value);
+};
+
+// Caching
+const characters = ref([]);
+const pageCount = ref(0);
+const page = ref(1);
+const cacheKey = "characters";
+
+watchEffect(async () => {
+  const cache = localStorage.getItem(cacheKey);
+  if (cache) {
+    const cachedData = JSON.parse(cache);
+    characters.value = cachedData[page.value - 1];
+    pageCount.value = cachedData.length;
+  } else {
+    const allCharacters = [];
+    let response = await axios.get(
+      `https://swapi.dev/api/people/?page=${page.value}`
+    );
+
+    while (response.data.next) {
+      allCharacters.push(response.data.results);
+      response = await axios.get(response.data.next);
+    }
+
+    allCharacters.push(response.data.results);
+    characters.value = allCharacters[page.value - 1];
+    localStorage.setItem(cacheKey, JSON.stringify(allCharacters));
+    pageCount.value = allCharacters.length;
+  }
+});
+
+const filteredPeople = computed(() => {
+  return data.peopleData.filter((person) =>
+    person.name.toLowerCase().includes(data.selectedName.toLowerCase())
+  );
+});
 
 const getPlanetName = async (homeworld) => {
   try {
@@ -173,21 +190,6 @@ const getPlanetData = async () => {
     console.log("Error: ", error);
   }
 };
-
-/* const columnSorting = (colName) => {
-  if (data.sortingKey === colName) {
-    data.sortDirection = data.sortDirection === "asc" ? "desc" : "asc";
-  } else {
-    data.sortingKey = colName;
-    data.sortDirection = "asc";
-  }
-
-  data.characterData = _.orderBy(
-    data.characterData,
-    colName,
-    data.sortDirection
-  );
-}; */
 
 /* Pagination */
 const handlePagination = computed(() => {
@@ -217,12 +219,11 @@ export default {
   data: data,
   handlePagination,
   getAllPages,
-  // nextPage,
-  // prevPage,
-  // getPeople,
+  debouncedSearch,
+  getPagesData,
+  filteredPeople,
   getCharacterData,
   getPlanetName,
   getPlanetData,
   changePage,
-  // columnSorting,
 };

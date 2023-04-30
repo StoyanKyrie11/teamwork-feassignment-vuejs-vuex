@@ -19,10 +19,10 @@ const store = inject("store");
       {{ char.mass + " kg" }}
     </td>
     <td class="text-center">
-      {{ char.created.substring(0, 10).replaceAll("-", "/") }}
+      {{ new Date(char.created).toLocaleString() }}
     </td>
     <td class="text-center">
-      {{ char.edited.substring(0, 10).replaceAll("-", "/") }}
+      {{ new Date(char.edited).toLocaleString() }}
     </td>
     <td class="text-center">
       <div class="root">
