@@ -1,84 +1,106 @@
 <template>
-  <v-container class="main-container" fluid>
-    <v-row cols="12">
-      <ImageComponent />
-      <!-- <ThemeSwitchComponent /> -->
-    </v-row>
-    <v-responsive class="mx-auto">
-      <v-text-field
-        class="star-wars-text-field"
-        v-model="search"
-        @input="debouncedSearch"
-        prepend-inner-icon="mdi-magnify"
-        placeholder="ex: Luke Skywalker"
-        maxlength="50"
-        type="text"
-        autofocus
-        hide-no-data
-        clearable
-        color="orange"
-        bg-color="white"
-      />
-    </v-responsive>
-    <v-table class="star-wars-table">
-      <thead>
-        <TableHead />
-      </thead>
-      <tbody>
-        <tr
-          class="star-wars-table-body"
-          v-for="person in people"
-          :key="person.name"
-        >
-          <td class="text-center">{{ person.name }}</td>
-          <td class="text-center">
-            {{ person.height }}
-          </td>
-          <td class="text-center">{{ person.mass + " kg" }}</td>
-          <td class="text-center">
-            {{ new Date(person.created).toLocaleString() }}
-          </td>
-          <td class="text-center">
-            {{ new Date(person.edited).toLocaleString() }}
-          </td>
-          <td class="text-center">
-            <div class="root">
-              <button
-                class="planet-modal-btn"
-                @click.prevent="
-                  store.getPlanetData();
-                  store.data.isModalOpen = true;
-                "
-              >
-                {{ person.homeworld }}
-              </button>
-              <PlanetsDataModal />
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+  <div id="page-wrapper" :class="changeTheme">
+    <v-container class="main-container" fluid>
+      <v-row cols="12">
+        <ImageComponent />
+      </v-row>
+      <v-responsive class="mx-auto">
+        <v-text-field
+          class="star-wars-text-field"
+          v-model="search"
+          @input="debouncedSearch"
+          prepend-inner-icon="mdi-magnify"
+          placeholder="ex: Luke Skywalker"
+          maxlength="50"
+          type="text"
+          autofocus
+          hide-no-data
+          clearable
+          color="orange"
+          bg-color="white"
+        />
+      </v-responsive>
+      <v-table class="star-wars-table">
+        <thead>
+          <TableHead />
+        </thead>
+        <tbody>
+          <tr
+            class="star-wars-table-body"
+            v-for="person in people"
+            :key="person.name"
+          >
+            <td class="text-center">{{ person.name }}</td>
+            <td class="text-center">
+              {{ person.height }}
+            </td>
+            <td class="text-center">{{ person.mass + " kg" }}</td>
+            <td class="text-center">
+              {{ new Date(person.created).toLocaleString() }}
+            </td>
+            <td class="text-center">
+              {{ new Date(person.edited).toLocaleString() }}
+            </td>
+            <td class="text-center">
+              <div class="root">
+                <button
+                  class="planet-modal-btn"
+                  @click="
+                    getPlanetData(person.homeworld);
+                    store.data.isModalOpen = true;
+                  "
+                >
+                  {{ person.planetName }}
+                </button>
+                <Teleport to="body">
+                  <div class="modal" v-if="store.data.isModalOpen">
+                    <planets-data-modal-content
+                      @close="store.data.isModalOpen = false"
+                      :show="store.data.isModalOpen"
+                      :planetName="data.homeworldData.planetName"
+                      :diameter="data.homeworldData.diameter"
+                      :climate="data.homeworldData.climate"
+                      :population="data.homeworldData.population"
+                    />
+                  </div>
+                </Teleport>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
 
-    <v-pagination
-      v-model="page"
-      :length="numPages"
-      @input="getPeopleData"
-      :total-visible="5"
-      prev-icon="mdi-menu-left"
-      next-icon="mdi-menu-right"
-      class="pagination-main"
-      density="comfortable"
-      show-first-last-page
-    ></v-pagination>
-  </v-container>
+      <v-pagination
+        v-model="page"
+        :length="numPages"
+        @input="getPeopleData"
+        :total-visible="5"
+        prev-icon="mdi-menu-left"
+        next-icon="mdi-menu-right"
+        class="pagination-main"
+        density="comfortable"
+        show-first-last-page
+      ></v-pagination>
+      <v-switch
+        class="pagination-switcher"
+        v-model="darkTheme"
+        label="Dark Mode/Light Mode"
+        color="orange-darken-3"
+        value="orange-darken-3"
+        hide-details
+      >
+      </v-switch>
+    </v-container>
+  </div>
 </template>
 
 <script setup>
 import axios from "axios";
-import { watch, ref, reactive, inject, onMounted } from "vue";
+import { watch, ref, reactive, inject, onMounted, computed } from "vue";
 import TableHead from "./Table/TableHead.vue";
-import PlanetsDataModal from "./Modal/PlanetsDataModal.vue";
+import PlanetsDataModalContent from "../components/Modal/PlanetsDataModalContent.vue";
 import ImageComponent from "../components/ImageComponent/ImageComponent.vue";
+import { CHARACTER_PAGES_URL } from "../constants/constants.js";
 
 const store = inject("store");
 
@@ -86,22 +108,43 @@ const page = ref(1);
 const people = reactive([]);
 const numPages = ref(1);
 const search = ref("");
-
-const planetData = reactive({
-  planetName: "",
-  diameter: "",
-  climate: "",
-  population: "",
+const data = reactive({
+  homeworldData: { planetName: "", diameter: "", climate: "", population: "" },
+  planetUrl: [],
 });
 
-const getPeopleData = async () => {
+const darkTheme = ref(false);
+const changeTheme = computed(() => {
+  return {
+    "theme--light": !darkTheme.value,
+    "theme--dark": darkTheme.value,
+  };
+});
+
+// Debounce util - 2 seconds delay
+const debounce = (fn, timeout) => {
+  let timeOutId;
+  return (...args) => {
+    if (timeOutId) {
+      clearTimeout(timeOutId);
+    }
+    timeOutId = setTimeout(() => {
+      fn(...args);
+    }, timeout);
+  };
+};
+
+const getPeopleData = debounce(async () => {
   try {
     const response = await axios.get(
-      `https://swapi.dev/api/people/?page=${page.value}&search=${search.value}`
+      CHARACTER_PAGES_URL + `${page.value}&search=${search.value}`
     );
     numPages.value = Math.ceil(response.data.count / 10);
     const peopleData = await Promise.all(
-      response.data.results.map(async (person) => {
+      response.data.results.map(async (person, index) => {
+        // Extract planet urls from people data
+        data.planetUrl.push(response.data.results[index].homeworld);
+        // getPlanetData(response.data.results[index].homeworld);
         const planetResponse = await axios.get(person.homeworld);
         return {
           name: person.name,
@@ -109,21 +152,40 @@ const getPeopleData = async () => {
           mass: person.mass,
           created: person.created,
           edited: person.edited,
-          homeworld: planetResponse.data.name,
+          homeworld: person.homeworld,
+          planetName: planetResponse.data.name,
+          climate: planetResponse.data.climate,
+          population: planetResponse.data.population,
+          diameter: planetResponse.data.diameter,
         };
       })
     );
-    /* Proceed from here */
-    /* data.homeworldData = {
-      planetName: response.data.name,
-      diameter: response.data.diameter,
-      climate: response.data.climate,
-      population: response.data.population,
-    }; */
     people.length = 0;
     people.push(...peopleData);
   } catch (error) {
     console.log(error);
+  }
+}, 2000);
+
+const getPlanetData = async (planet) => {
+  try {
+    if (cache.has[planet]) {
+      // Use cached data if existing
+      data.homeworldData = cache.value[planet];
+    } else {
+      // Make an API call to get the planet data
+      const response = await axios.get(planet);
+      const planetData = {
+        planetName: response.data.name,
+        diameter: response.data.diameter,
+        climate: response.data.climate,
+        population: response.data.population,
+      };
+      data.homeworldData = planetData;
+      cache.value[planet] = planetData;
+    }
+  } catch (error) {
+    console.log("Error: ", error);
   }
 };
 
@@ -139,3 +201,20 @@ watch([page, search], () => {
   getPeopleData();
 });
 </script>
+
+<style lang="scss">
+$theme-dark-background: #121212;
+$theme-dark-text: #f5f5f5;
+$theme-light-background: #f5f5f5;
+$theme-light-text: #121212;
+
+.theme--light {
+  background-color: $theme-light-background;
+  color: $theme-light-text;
+}
+
+.theme--dark {
+  background-color: $theme-dark-background;
+  color: $theme-dark-text;
+}
+</style>

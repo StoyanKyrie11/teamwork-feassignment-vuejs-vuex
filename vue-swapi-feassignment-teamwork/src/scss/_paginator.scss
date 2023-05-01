@@ -9,3 +9,12 @@
   display: flex;
   justify-content: center;
 }
+
+.pagination-switcher {
+  height: 10vh;
+  bottom: 0;
+  width: 80%;
+  position: fixed;
+  top: 0;
+  left: 75%;
+}

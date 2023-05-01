@@ -1,3 +1,7 @@
+.star-wars-table {
+  border-radius: 5px;
+}
+
 .star-wars-table-header {
   th {
     color: $table-header-color;
@@ -7,8 +11,9 @@
     transition: all 0.3s ease-in-out;
 
     &:hover {
-      background-color: $text-color;
-      color: $table-header-hover-color;
+      transition: all 0.2s ease-in-out;
+      background-color: $orange;
+      color: $red !important;
     }
   }
 }
@@ -16,7 +21,7 @@
 .star-wars-table-body {
   transition: all 0.2s ease-in-out;
   &:hover {
-    background-color: $table-header-hover-color;
+    background-color: $orange;
     color: $table-body-hover-color;
   }
 }
