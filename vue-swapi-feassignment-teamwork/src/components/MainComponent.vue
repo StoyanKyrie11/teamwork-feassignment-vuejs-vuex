@@ -20,7 +20,8 @@
           bg-color="white"
         />
       </v-responsive>
-      <v-table class="star-wars-table">
+      <LoadingStateComponent class="loading-state-component" v-if="isLoading" />
+      <v-table v-else="isLoading" class="star-wars-table">
         <thead>
           <TableHead />
         </thead>
@@ -47,16 +48,17 @@
                   class="planet-modal-btn"
                   @click="
                     getPlanetData(person.homeworld);
-                    store.data.isModalOpen = true;
+                    isModalOpen = true;
                   "
                 >
                   {{ person.planetName }}
                 </button>
                 <Teleport to="body">
-                  <div class="modal" v-if="store.data.isModalOpen">
+                  <div class="modal">
                     <planets-data-modal-content
-                      @close="store.data.isModalOpen = false"
-                      :show="store.data.isModalOpen"
+                      @keydown.esc="closeModal"
+                      @close="isModalOpen = false"
+                      :show="isModalOpen"
                       :planetName="data.homeworldData.planetName"
                       :diameter="data.homeworldData.diameter"
                       :climate="data.homeworldData.climate"
@@ -80,6 +82,7 @@
         class="pagination-main"
         density="comfortable"
         show-first-last-page
+        rounded="circle"
       ></v-pagination>
       <v-switch
         class="pagination-switcher"
@@ -101,8 +104,7 @@ import TableHead from "./Table/TableHead.vue";
 import PlanetsDataModalContent from "../components/Modal/PlanetsDataModalContent.vue";
 import ImageComponent from "../components/ImageComponent/ImageComponent.vue";
 import { CHARACTER_PAGES_URL } from "../constants/constants.js";
-
-const store = inject("store");
+import LoadingStateComponent from "./LoadingStateComponent/LoadingStateComponent.vue";
 
 const page = ref(1);
 const people = reactive([]);
@@ -112,6 +114,11 @@ const data = reactive({
   homeworldData: { planetName: "", diameter: "", climate: "", population: "" },
   planetUrl: [],
 });
+const isModalOpen = ref(false);
+function closeModal() {
+  isModalOpen.value = false;
+}
+const isLoading = ref(false);
 
 const darkTheme = ref(false);
 const changeTheme = computed(() => {
@@ -136,15 +143,13 @@ const debounce = (fn, timeout) => {
 
 const getPeopleData = debounce(async () => {
   try {
+    isLoading.value = true;
     const response = await axios.get(
       CHARACTER_PAGES_URL + `${page.value}&search=${search.value}`
     );
     numPages.value = Math.ceil(response.data.count / 10);
     const peopleData = await Promise.all(
       response.data.results.map(async (person, index) => {
-        // Extract planet urls from people data
-        data.planetUrl.push(response.data.results[index].homeworld);
-        // getPlanetData(response.data.results[index].homeworld);
         const planetResponse = await axios.get(person.homeworld);
         return {
           name: person.name,
@@ -164,26 +169,22 @@ const getPeopleData = debounce(async () => {
     people.push(...peopleData);
   } catch (error) {
     console.log(error);
+  } finally {
+    isLoading.value = false;
   }
 }, 2000);
 
 const getPlanetData = async (planet) => {
   try {
-    if (cache.has[planet]) {
-      // Use cached data if existing
-      data.homeworldData = cache.value[planet];
-    } else {
-      // Make an API call to get the planet data
-      const response = await axios.get(planet);
-      const planetData = {
-        planetName: response.data.name,
-        diameter: response.data.diameter,
-        climate: response.data.climate,
-        population: response.data.population,
-      };
-      data.homeworldData = planetData;
-      cache.value[planet] = planetData;
-    }
+    // Make an API call to get the planet data
+    const response = await axios.get(planet);
+    const planetData = {
+      planetName: response.data.name,
+      diameter: response.data.diameter,
+      climate: response.data.climate,
+      population: response.data.population,
+    };
+    data.homeworldData = planetData;
   } catch (error) {
     console.log("Error: ", error);
   }
@@ -202,7 +203,7 @@ watch([page, search], () => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 $theme-dark-background: #121212;
 $theme-dark-text: #f5f5f5;
 $theme-light-background: #f5f5f5;
@@ -216,5 +217,9 @@ $theme-light-text: #121212;
 .theme--dark {
   background-color: $theme-dark-background;
   color: $theme-dark-text;
+}
+
+::v-deep .v-pagination__item {
+  box-shadow: none;
 }
 </style>

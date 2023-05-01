@@ -1,8 +1,13 @@
-// Variables
+/* Variables */
+// Main colors & styles
 $font-stack: "Distant Galaxy", sans-serif;
 $container-color: #c1bfbf;
 $primary-color: rgba(179, 145, 82, 0.677);
 $secondary-color: rgba(151, 224, 95, 0.5);
+$bg: #16a085;
+$orange: #fac562;
+$white: #f0f0f0;
+$red: #e74c3c;
 $scrollbar-bg-color: #eaeaea;
 $homeworld-btn-color: #ffe81f;
 $modal-container-bg-color: #fff;
@@ -21,9 +26,3 @@ $switch-width: 270px;
 $switch-height: 120px;
 $switchToggle-width: $switch-height;
 $sky-night: #023660;
-$bg: #16a085;
-$bg-blue: #3384a8;
-$grey: #e0e0e0;
-$orange: #fac562;
-$white: #f0f0f0;
-$red: #e74c3c;

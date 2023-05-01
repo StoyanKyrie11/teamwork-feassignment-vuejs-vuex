@@ -18,3 +18,7 @@
   top: 0;
   left: 75%;
 }
+
+::v-deep .v-pagination__item {
+  box-shadow: none;
+}
