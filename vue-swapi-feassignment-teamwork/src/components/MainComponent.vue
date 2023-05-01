@@ -8,7 +8,7 @@
         <v-text-field
           class="star-wars-text-field"
           v-model="search"
-          @input="debouncedSearch"
+          @input="debouncedSearch, setInitPage()"
           prepend-inner-icon="mdi-magnify"
           placeholder="ex: Luke Skywalker"
           maxlength="50"
@@ -21,6 +21,9 @@
         />
       </v-responsive>
       <LoadingStateComponent class="loading-state-component" v-if="isLoading" />
+      <v-alert v-if="!isLoading && people.length === 0" color="error">
+        No user data found! Try again you should!
+      </v-alert>
       <v-table v-else="isLoading" class="star-wars-table">
         <thead>
           <TableHead />
@@ -106,6 +109,7 @@ import ImageComponent from "../components/ImageComponent/ImageComponent.vue";
 import { CHARACTER_PAGES_URL } from "../constants/constants.js";
 import LoadingStateComponent from "./LoadingStateComponent/LoadingStateComponent.vue";
 
+// Reactive variables
 const page = ref(1);
 const people = reactive([]);
 const numPages = ref(1);
@@ -144,13 +148,31 @@ const debounce = (fn, timeout) => {
 const getPeopleData = debounce(async () => {
   try {
     isLoading.value = true;
-    const response = await axios.get(
-      CHARACTER_PAGES_URL + `${page.value}&search=${search.value}`
-    );
+    let response;
+    const cacheKey = `peopleDataPage${page.value}Search${search.value}`;
+
+    if (localStorage.getItem(cacheKey)) {
+      response = JSON.parse(localStorage.getItem(cacheKey));
+    } else {
+      response = await axios.get(
+        CHARACTER_PAGES_URL + `${page.value}&search=${search.value}`
+      );
+      localStorage.setItem(cacheKey, JSON.stringify(response));
+    }
+
     numPages.value = Math.ceil(response.data.count / 10);
-    const peopleData = await Promise.all(
-      response.data.results.map(async (person, index) => {
-        const planetResponse = await axios.get(person.homeworld);
+    const promises = response.data.results.map(async (person, index) => {
+      try {
+        const cacheKey = `planetData-${person.homeworld}`;
+        let planetResponse;
+
+        if (localStorage.getItem(cacheKey)) {
+          planetResponse = JSON.parse(localStorage.getItem(cacheKey));
+        } else {
+          planetResponse = await axios.get(person.homeworld);
+          localStorage.setItem(cacheKey, JSON.stringify(planetResponse));
+        }
+
         return {
           name: person.name,
           height: person.height,
@@ -163,16 +185,24 @@ const getPeopleData = debounce(async () => {
           population: planetResponse.data.population,
           diameter: planetResponse.data.diameter,
         };
-      })
-    );
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    });
+    const results = await Promise.allSettled(promises);
     people.length = 0;
-    people.push(...peopleData);
+    people.push(
+      ...results
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value)
+    );
   } catch (error) {
     console.log(error);
   } finally {
     isLoading.value = false;
   }
-}, 2000);
+}, 500);
 
 const getPlanetData = async (planet) => {
   try {
@@ -190,6 +220,15 @@ const getPlanetData = async (planet) => {
   }
 };
 
+// Resetting to init page if field is emptied
+const setInitPage = () => {
+  if (!search.value) {
+    page.value = 1;
+    getPeopleData();
+  }
+};
+
+// Init debounced people data search
 const debouncedSearch = () => {
   getPeopleData();
 };
@@ -219,7 +258,7 @@ $theme-light-text: #121212;
   color: $theme-dark-text;
 }
 
-::v-deep .v-pagination__item {
+:deep .v-pagination__item {
   box-shadow: none;
 }
 </style>

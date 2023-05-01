@@ -1,15 +1,10 @@
 <script setup>
-import CachingTest from "./components/CachingTest.vue";
 import MainComponent from "./components/MainComponent.vue";
-import ThemingTest from "./components/ThemingTest.vue";
 </script>
 
 <template>
   <div class="main">
-    <!-- <CharacterData /> -->
-    <!-- <CachingTest /> -->
     <MainComponent />
-    <!-- <ThemingTest /> -->
   </div>
 </template>
 <style>
