@@ -1,4 +1,4 @@
-import { watchEffect, ref, reactive, computed } from "vue";
+import { watch, ref, reactive, computed } from "vue";
 import axios from "axios";
 import _ from "lodash";
 import {
@@ -54,10 +54,14 @@ const data = reactive({
   debounceTimeout: null,
 });
 
-const inputValue = ref("");
-const character = ref(null);
+/* WORKING LOGIC HERE */
+const PAGE_SIZE = 10;
+const people = ref([]);
+const totalPeople = ref(0);
+const totalPages = ref(0);
+const page = ref(1);
 
-// Debouncing - 2 seconds delay
+// Debounce util - 2 seconds delay
 const debounce = (fn, timeout) => {
   let timeOutId;
   return (...args) => {
@@ -70,12 +74,105 @@ const debounce = (fn, timeout) => {
   };
 };
 
+const getPeople = async (value) => {
+  try {
+    const response = await axios.get(
+      `https://swapi.dev/api/people/?page=${page.value}&search=${value}`
+    );
+    people.value = response.data.results.map((person) => ({
+      name: person.name,
+      height: person.height,
+      mass: person.mass,
+      created: person.created,
+      edited: person.edited,
+      homeworld: person.homeworld,
+    }));
+    totalPeople.value = response.data.count;
+    totalPages.value = Math.ceil(totalPeople.value / PAGE_SIZE);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+/* For testing of planet data extraction */
+const numPages = ref(1);
+
+const loadFirstBatch = async () => {
+  try {
+    const response = await axios.get(CHARACTER_PAGES_URL + `${search.value}`);
+    numPages.value = Math.ceil(response.data.count / 10);
+    const peopleData = await Promise.all(
+      response.data.results.map(async (person) => {
+        const planetResponse = await axios.get(person.homeworld);
+        return {
+          name: person.name,
+          planet: planetResponse.data.name,
+        };
+      })
+    );
+    people.length = 0;
+    people.push(...peopleData);
+  } catch (error) {
+    console.log("Error: ", error);
+    return "";
+  }
+};
+
+const getPlanetName = async (planetUrl) => {
+  try {
+    const response = await axios.get(planetUrl);
+    return response.data.name;
+  } catch (error) {
+    console.log(error);
+    return "";
+  }
+};
+
+const getPlanetData = async () => {
+  try {
+    const response = await axios.get(data.peopleData[0].homeworld);
+    data.homeworldData = {
+      planetName: response.data.name,
+      diameter: response.data.diameter,
+      climate: response.data.climate,
+      population: response.data.population,
+    };
+  } catch (error) {
+    console.log("Error: ", error);
+  }
+};
+
+const debouncedSearch = () => {
+  loadFirstBatch();
+};
+
+const changePage = (page) => {
+  data.changePage = page;
+  getCharacterData();
+};
+
+watch(
+  [people, page],
+  () => {
+    const start = (page.value - 1) * PAGE_SIZE;
+    data.people = data.people.slice(start, start + PAGE_SIZE);
+  },
+  /* [
+    selectedName,
+    () => {
+      loadFirstBatch();
+    },
+  ] */
+);
+
+const inputValue = ref("");
+const character = ref(null);
+
 const getPagesData = debounce(async (inputValue) => {
   try {
     const response = await axios.get(
       `https://swapi.dev/api/people/?search=${inputValue}`
     );
-    character.value = response.data.results;
   } catch (error) {
     console.error(error);
   }
@@ -83,6 +180,32 @@ const getPagesData = debounce(async (inputValue) => {
 
 const getCharacterData = async () => {
   try {
+    /* Work on the logic for displaying the planet modal tomorrow */
+    const response = await axios.get(
+      `${CHARACTER_PEOPLE_SEARCH_URL}${data.selectedName}`
+    );
+    const charDataResults = response.data.results.map((person) => {
+      return {
+        name: person.name,
+        height: person.height,
+        mass: person.mass,
+        created: person.created,
+        edited: person.edited,
+        homeworld: person.homeworld,
+      };
+    });
+    data.peopleData = charDataResults;
+    console.log(data.peopleData);
+    if (charDataResults.length > 0) {
+      data.selectedCharacter = charDataResults[0];
+      data.characterPlanetName = await getPlanetName(
+        data.selectedCharacter.homeworld
+      );
+    } else {
+      data.selectedCharacter = null;
+      data.characterPlanetName = "";
+    }
+
     /* const cacheKey = "peopleData";
     const cache = localStorage.getItem(cacheKey);
     if (cache) {
@@ -102,7 +225,7 @@ const getCharacterData = async () => {
       homeworld: person.homeworld,
     }));
 
-/*     data.totalPeople = dataResponse.data.count;
+    /*     data.totalPeople = dataResponse.data.count;
     data.totalDataPageCount = Math.ceil(
       dataResponse.data.count / dataResponse.data.results.length
     );
@@ -126,13 +249,8 @@ const getCharacterData = async () => {
   }
 };
 
-// Debounced request
-const debouncedSearch = () => {
-  getPagesData(inputValue.value);
-};
-
 // Caching
-const characters = ref([]);
+/* const characters = ref([]);
 const pageCount = ref(0);
 const page = ref(1);
 const cacheKey = "characters";
@@ -159,37 +277,13 @@ watchEffect(async () => {
     localStorage.setItem(cacheKey, JSON.stringify(allCharacters));
     pageCount.value = allCharacters.length;
   }
-});
+}); */
 
 const filteredPeople = computed(() => {
   return data.peopleData.filter((person) =>
     person.name.toLowerCase().includes(data.selectedName.toLowerCase())
   );
 });
-
-const getPlanetName = async (homeworld) => {
-  try {
-    const response = await axios.get(homeworld);
-    return response.data.name;
-  } catch (error) {
-    console.log("Error: ", error);
-    return "";
-  }
-};
-
-const getPlanetData = async () => {
-  try {
-    const response = await axios.get(data.peopleData[0].homeworld);
-    data.homeworldData = {
-      planetName: response.data.name,
-      diameter: response.data.diameter,
-      climate: response.data.climate,
-      population: response.data.population,
-    };
-  } catch (error) {
-    console.log("Error: ", error);
-  }
-};
 
 /* Pagination */
 const handlePagination = computed(() => {
@@ -201,11 +295,6 @@ const handlePagination = computed(() => {
 const getAllPages = computed(() => {
   return Math.ceil(data.characterData.length / data.charPerPage);
 });
-
-const changePage = (page) => {
-  data.changePage = page;
-  getCharacterData();
-};
 
 /* const nextPage = () => {
   data.currPage++;
@@ -219,10 +308,12 @@ export default {
   data: data,
   handlePagination,
   getAllPages,
-  debouncedSearch,
-  getPagesData,
   filteredPeople,
-  getCharacterData,
+  getPeople,
+  getPagesData,
+  // initPageLoadData,
+  loadFirstBatch,
+  // getCharacterData,
   getPlanetName,
   getPlanetData,
   changePage,

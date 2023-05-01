@@ -1,6 +1,7 @@
 <script setup>
 import CharacterTableHead from "./CharacterTableHead.vue";
 import CharacterTableBody from "./CharacterTableBody.vue";
+/* Add logic for No character data found with v-if */
 </script>
 
 <template>

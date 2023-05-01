@@ -22,12 +22,26 @@ const store = inject("store");
         color="orange"
         bg-color="white"
       /> -->
-  <v-text-field
+  <!-- Working field -->
+  <!-- <v-text-field
     class="star-wars-text-field"
     @keydown.enter.prevent
     @input="store.debouncedSearch"
     @keyup.enter="store.debouncedSearch"
     :search-input.sync="store.inputValue"
+    prepend-inner-icon="mdi-magnify"
+    placeholder="ex: Luke Skywalker"
+    maxlength="50"
+    type="text"
+    autofocus
+    hide-no-data
+    clearable
+    color="orange"
+    bg-color="white"
+  /> -->
+  <v-text-field
+    v-model="store.search"
+    @input="store.debouncedSearch"
     prepend-inner-icon="mdi-magnify"
     placeholder="ex: Luke Skywalker"
     maxlength="50"

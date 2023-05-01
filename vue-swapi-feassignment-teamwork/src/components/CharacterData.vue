@@ -1,21 +1,21 @@
 <script setup>
-import { watch, onMounted, inject } from "vue";
+import { ref, watch, onMounted, inject } from "vue";
 
-import CharacterTable from "../components/Table/CharacterTable.vue";
-import CharacterTablePagination from "../components/Table/CharacterTablePagination.vue";
+// import CharacterTable from "../components/Table/CharacterTable.vue";
+import TablePagination from "../components/Table/TablePagination.vue";
 import LoadingStateComponent from "../components/LoadingStateComponent/LoadingStateComponent.vue";
 import ImageComponent from "../components/ImageComponent/ImageComponent.vue";
 import TextFieldComponent from "../components/TextFieldComponent/TextFieldComponent.vue";
 
 const store = inject("store");
 
-watch(
+/* watch(
   () => store.inputValue,
   () => {
     store.debouncedSearch();
   },
   () => {}
-);
+); */
 
 /* watch(
   () => store.inputValue,
@@ -27,7 +27,9 @@ watch(
 onMounted(async () => {
   try {
     // store.getPagesData();
-    store.getCharacterData();
+    // store.getCharacterData();
+    store.initPageLoadData();
+    store.getPeople();
   } catch (error) {
     console.log("Error: ", error);
   }
@@ -64,6 +66,18 @@ onMounted(async () => {
       class="elevation-1"
     /> -->
 
-    <CharacterTablePagination />
+    <!-- <CharacterTablePagination /> -->
+    <v-pagination
+      density="comfortable"
+      show-first-last-page
+      class="pagination-button"
+      @input="store.getPeople()"
+      @update:modelValue="store.changePage"
+      v:model="store.page"
+      :length="9"
+      :total-visible="9"
+      prev-icon="mdi-menu-left"
+      next-icon="mdi-menu-right"
+    />
   </v-container>
 </template>

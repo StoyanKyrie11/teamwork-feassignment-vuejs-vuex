@@ -1,8 +1,10 @@
 <script setup>
-import { inject } from "vue";
+import { ref, inject } from "vue";
 import PlanetsDataModal from "../Modal/PlanetsDataModal.vue";
+import formattedDate from "../../utils/formattedDate.js";
 
 const store = inject("store");
+const dateFormVal = ref("");
 </script>
 
 <template>
@@ -18,8 +20,12 @@ const store = inject("store");
     <td class="text-center">
       {{ char.mass + " kg" }}
     </td>
-    <td class="text-center">
-      {{ new Date(char.created).toLocaleString() }}
+    <td
+      class="text-center"
+      :dateForm="formattedDate"
+      :dateFormVal="dateFormVal"
+    >
+      {{ char.created }}
     </td>
     <td class="text-center">
       {{ new Date(char.edited).toLocaleString() }}
