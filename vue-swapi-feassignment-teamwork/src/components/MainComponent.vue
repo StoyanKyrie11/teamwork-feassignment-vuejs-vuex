@@ -20,15 +20,11 @@
           bg-color="white"
         />
       </v-responsive>
-      <template v-if="isLoading && people.length > 0">
-        <LoadingStateComponent class="loading-state-component" />
-      </template>
-      <template v-else-if="!isLoading && people.length === 0">
-        <v-alert color="error">
-          No user data found! Try again you should!
-        </v-alert></template
-      >
-      <v-table v-else="isLoading" class="star-wars-table">
+      <LoadingStateComponent
+        v-if="people.length === 0"
+        class="loading-state-component"
+      />
+      <v-table v-else-if="people.length > 0" class="star-wars-table">
         <thead>
           <TableHead />
         </thead>
