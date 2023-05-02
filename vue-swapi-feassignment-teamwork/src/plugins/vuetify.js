@@ -9,6 +9,9 @@ export default createVuetify({
   components: {
     ...labs,
     /* explicit stating of imports */
+    VCol: components.VCol,
+    VChip: components.VChip,
+    VDivider: components.VDivider,
     VAlert: components.VAlert,
     VSwitch: components.VSwitch,
     VInput: components.VInput,

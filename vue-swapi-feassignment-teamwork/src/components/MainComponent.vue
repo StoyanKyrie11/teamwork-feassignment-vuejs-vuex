@@ -1,14 +1,15 @@
 <template>
   <div id="page-wrapper" :class="changeTheme">
-    <v-container class="main-container" fluid>
-      <v-row cols="12">
-        <ImageComponent />
+    <v-responsive class="main-container">
+      <v-row>
+        <v-col cols="8">
+          <ImageComponent />
+        </v-col>
       </v-row>
-      <v-responsive class="mx-auto">
+      <v-responsive>
         <v-text-field
-          class="star-wars-text-field"
           v-model="search"
-          @input="debouncedSearch, setInitPage()"
+          class="star-wars-text-field"
           prepend-inner-icon="mdi-magnify"
           placeholder="ex: Luke Skywalker"
           maxlength="50"
@@ -18,27 +19,36 @@
           clearable
           color="orange"
           bg-color="white"
+          @input="debouncedSearch, setInitPage()"
         />
       </v-responsive>
+
+      <v-divider />
+
       <LoadingStateComponent
         v-if="people.length === 0"
         class="loading-state-component"
       />
+
       <v-table v-else-if="people.length > 0" class="star-wars-table">
         <thead>
           <TableHead />
         </thead>
         <tbody>
           <tr
-            class="star-wars-table-body"
             v-for="person in people"
             :key="person.name"
+            class="star-wars-table-body"
           >
-            <td class="text-center">{{ person.name }}</td>
+            <td class="text-center">
+              {{ person.name }}
+            </td>
             <td class="text-center">
               {{ person.height }}
             </td>
-            <td class="text-center">{{ person.mass + " kg" }}</td>
+            <td class="text-center">
+              {{ person.mass + " kg" }}
+            </td>
             <td class="text-center">
               {{ new Date(person.created).toLocaleString() }}
             </td>
@@ -59,13 +69,13 @@
                 <Teleport to="body">
                   <div class="modal">
                     <planets-data-modal-content
-                      @keydown.esc="closeModal"
-                      @close="isModalOpen = false"
                       :show="isModalOpen"
-                      :planetName="data.homeworldData.planetName"
+                      :planet-name="data.homeworldData.planetName"
                       :diameter="data.homeworldData.diameter"
                       :climate="data.homeworldData.climate"
                       :population="data.homeworldData.population"
+                      @keydown.esc="closeModal"
+                      @close="isModalOpen = false"
                     />
                   </div>
                 </Teleport>
@@ -78,7 +88,6 @@
       <v-pagination
         v-model="page"
         :length="numPages"
-        @input="getPeopleData"
         :total-visible="5"
         prev-icon="mdi-menu-left"
         next-icon="mdi-menu-right"
@@ -86,17 +95,17 @@
         density="comfortable"
         show-first-last-page
         rounded="circle"
-      ></v-pagination>
-      <v-switch
-        class="pagination-switcher"
+        @input="getPeopleData"
+      />
+      <v-chip
         v-model="darkTheme"
+        class="pagination-switcher"
         label="Dark Mode/Light Mode"
         color="orange-darken-3"
         value="orange-darken-3"
         hide-details
-      >
-      </v-switch>
-    </v-container>
+      />
+    </v-responsive>
   </div>
 </template>
 

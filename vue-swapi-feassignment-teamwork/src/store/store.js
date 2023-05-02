@@ -2,8 +2,10 @@ import axios from "axios";
 import { ref, reactive, computed, toRefs } from "vue";
 import { CHARACTER_PAGES_URL } from "../constants/constants.js";
 
-//TODO: Implement Global store approach of managing state
+//TODO: Implement Global store approach of managing state -- Pinia
 // TODO: Re-do the project using SFCs composition API and reusability of components
+
+// TODO: Make the app mobile responsive
 const page = ref(1);
 const people = reactive([]);
 const numPages = ref(1);
